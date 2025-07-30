@@ -1,12 +1,10 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import "./App.css";
+import { Timer } from "./components/Timer";
 
 function App() {
   return (
-    <>
-      <h1>Vite + React</h1>
-    </>
+    <div className="w-[100%] h-[100%] min-h-[100vh] overflow-hidden box-border bg-red-800/80">
+      <Timer />
+    </div>
   );
 }
 
