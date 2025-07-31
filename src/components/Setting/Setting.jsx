@@ -1,11 +1,12 @@
 import { SettingForm } from "./SettingForm/SettingForm";
 
-export const Settings = ({
+export const Setting = ({
   visibleSetting,
   handleSubmitForm,
   handleChangeTime,
-  handleOpenSettings,
+  toggleSetting,
   leftTime,
+  localTime,
   time,
 }) => {
   return (
@@ -24,7 +25,7 @@ export const Settings = ({
           SETTING
         </h2>
         <button
-          onClick={handleOpenSettings}
+          onClick={toggleSetting}
           className="absolute top-3 right-4 text-lg text-neutral-500 font-bold hover:bg-neutral-200 w-7 h-7 rounded-md cursor-pointer"
         >
           ✕
@@ -34,6 +35,7 @@ export const Settings = ({
           handleSubmitForm={handleSubmitForm}
           handleChangeTime={handleChangeTime}
           leftTime={leftTime}
+          localTime={localTime}
           time={time}
         />
       </dialog>

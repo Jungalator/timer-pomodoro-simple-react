@@ -1,6 +1,6 @@
 import { SettingTimeItem } from "./SettingTimeItem";
 
-export const SettingTime = ({ handleChangeTime, time }) => {
+export const SettingTime = ({ handleChangeTime, localTime, time }) => {
   return (
     <div className="flex  justify-between text-center">
       <SettingTimeItem

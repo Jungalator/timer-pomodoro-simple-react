@@ -1,3 +1,4 @@
+import { playSound } from "./playSounds";
 // Controls of timer (start, pause, reset)
 
 export const handleStartTimer = (
@@ -17,13 +18,16 @@ export const handleStartTimer = (
       }
     });
   }, 1000);
+  playSound("/audio/buttonPress.mp3");
 };
 
 export const handlePauseTimer = (stopTimer) => {
   stopTimer();
+  playSound("/audio/buttonPress.mp3");
 };
 
 export const handleRestartTimer = (setSession, stopTimer, mode) => {
   setSession(mode);
   stopTimer();
+  playSound("/audio/buttonPress.mp3");
 };

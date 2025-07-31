@@ -12,7 +12,7 @@ export const SettingTimeItem = ({
         value={Math.floor(time / 60)}
         type="number"
         onChange={handleChangeTime}
-        className="bg-neutral-200 w-[100%] h-8 border-0 rounded-lg"
+        className="bg-neutral-200 text-neutral-700 font-semibold text-center w-[100%] h-8 border-0 rounded-lg"
       />
     </label>
   );

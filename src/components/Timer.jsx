@@ -4,27 +4,36 @@ import {
   handleStartTimer,
   handlePauseTimer,
   handleRestartTimer,
-} from "./Controls/ControlsFuncs";
+} from "../helpers/ControlsFuncs";
 import { Sessions } from "./Sessions/Sessions";
 import { Progressbar } from "./Progressbar/Progressbar";
 import { CompletedPomodoros } from "./CompletedPomodoros/CompletedPomodoros";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { Toaster, toast } from "sonner";
-import { SettingsButton } from "./Settings/SettingsButton";
-import { Settings } from "./Settings/Settings";
+import { SettingButton } from "./Setting/SettingButton";
+import { Setting } from "./Setting/Setting";
+import { toggleSetting } from "../helpers/toggleSetting";
+import { getTimeByMod } from "../helpers/getTimeByMode";
+import { playSound } from "../helpers/playSounds";
 
 export const Timer = () => {
-  const [time, setTime] = useState({
-    pomodoro: 25 * 60,
-    shortBreak: 1 * 60,
-    longBreak: 15 * 60,
-  });
-  const [timeLeft, setTimeLeft] = useState(25 * 60);
-  const [totalTime, setTotalTime] = useState(25 * 60);
+  const [localValue, setLocalValue] = useLocalStorage("completedPomodors", "");
+  const [localTime, setLocalTime] = useLocalStorage("timers", "");
+
+  const [time, setTime] = useState(
+    localTime
+      ? { ...localTime }
+      : {
+          pomodoro: 25 * 60,
+          shortBreak: 5 * 60,
+          longBreak: 15 * 60,
+        }
+  );
+  const [timeLeft, setTimeLeft] = useState(time.pomodoro);
+  const [totalTime, setTotalTime] = useState(time.pomodoro);
   const [mode, setMode] = useState("pomodoro");
   const [completedPomodoros, setCompletedPomodoros] = useState(0);
   const [visibleSetting, setVisibleSettings] = useState(false);
-
   const minutes = Math.floor(timeLeft / 60)
     .toString()
     .padStart(2, "0");
@@ -34,25 +43,9 @@ export const Timer = () => {
   const lastTimeRef = useRef(null);
   const progressRef = useRef(null);
 
-  const [localValue, setLocalValue] = useLocalStorage("completedPomodors", "");
-
-  const getTimeByMod = (mode) => {
-    switch (mode) {
-      case "short-break":
-        return time.shortBreak;
-
-      case "long-break":
-        return time.longBreak;
-
-      case "pomodoro":
-      default:
-        return time.pomodoro;
-    }
-  };
-
   const setSession = (mode) => {
-    setTimeLeft(getTimeByMod(mode));
-    setTotalTime(getTimeByMod(mode));
+    setTimeLeft(getTimeByMod(time, mode));
+    setTotalTime(getTimeByMod(time, mode));
   };
 
   const switchSession = (seconds, newMode) => {
@@ -67,6 +60,7 @@ export const Timer = () => {
   };
 
   const choiceMode = (e) => {
+    playSound("/audio/cleanWhoosh.mp3");
     const newMod = e.target.id;
     setMode(newMod);
     setSession(newMod);
@@ -74,10 +68,6 @@ export const Timer = () => {
 
   const handleCleanLocalStorage = () => {
     setLocalValue([]);
-  };
-
-  const handleOpenSettings = () => {
-    setVisibleSettings((prev) => !prev);
   };
 
   const handleChangeTime = (e) => {
@@ -91,10 +81,15 @@ export const Timer = () => {
 
   const handleSubmitForm = (e) => {
     e.preventDefault();
+    setLocalTime({ ...time });
+    setTimeLeft(time.pomodoro);
+    setTotalTime(time.pomodoro);
+    toggleSetting(setVisibleSettings);
   };
 
   useEffect(() => {
     if (timeLeft === 0) {
+      playSound("/audio/notificationBell.mp3");
       stopTimer();
       switch (mode) {
         case "pomodoro":
@@ -149,11 +144,12 @@ export const Timer = () => {
 
   return (
     <>
-      <Settings
+      <Setting
         visibleSetting={visibleSetting}
-        handleOpenSettings={handleOpenSettings}
+        toggleSetting={() => toggleSetting(setVisibleSettings)}
         handleChangeTime={handleChangeTime}
         handleSubmitForm={handleSubmitForm}
+        localTime={localTime}
         time={time}
       />
       <div className="mx-auto w-[70%]  border-0 p-5 mt-10 flex flex-col items-center rounded-xl  shadow-md shadow-black bg-red-400/50">
@@ -169,7 +165,9 @@ export const Timer = () => {
             },
           }}
         />
-        <SettingsButton handleOpenSettings={handleOpenSettings} />
+        <SettingButton
+          toggleSetting={() => toggleSetting(setVisibleSettings)}
+        />
 
         <Progressbar
           progressRef={progressRef}
