@@ -1,8 +1,10 @@
-import { SettingTime } from "./SettingTime.jsx/SettingTime";
-
+import { SettingTime } from "../../SettingTime/SettingTime";
+import { SettingSound } from "../../SettingSound/SettingSound";
 export const SettingForm = ({
   handleSubmitForm,
   handleChangeTime,
+  onChangeFunc,
+  switcherValue,
   localTime,
   time = { time },
 }) => {
@@ -16,6 +18,7 @@ export const SettingForm = ({
         localTime={localTime}
         time={time}
       />
+      <SettingSound onChangeFunc={onChangeFunc} switcherValue={switcherValue} />
       <button
         type="submit"
         className="text-neutral-600 font-semibold w-[30%] py-2 mx-auto bg-gray-300 hover:bg-gray-400/70 rounded-lg cursor-pointer"

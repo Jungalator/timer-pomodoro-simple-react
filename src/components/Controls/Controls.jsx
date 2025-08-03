@@ -4,9 +4,9 @@ export const Controls = ({
   handleRestartTimer,
 }) => {
   const buttonStyle =
-    "inline-block box-border px-7 border-0 rounded-[6px] h-10 shadow-md shadow-black focus:shadow-none leading-10 text-[17px] font-[600] text-white bg-neutral-600 hover:bg-neutral-700 cursor-pointer";
+    "inline-block box-border px-7 border-0 rounded-[6px] h-10 shadow-md shadow-black focus:shadow-none leading-10 text-[17px] font-[600] text-white bg-neutral-600/30  hover:bg-neutral-700/50 cursor-pointer";
   return (
-    <div className="w-[70%] mx-auto mb-15 flex justify-between">
+    <div className="w-[100%] mx-auto mb-15 flex justify-evenly">
       <button className={buttonStyle} onClick={handleRestartTimer}>
         Restart
       </button>

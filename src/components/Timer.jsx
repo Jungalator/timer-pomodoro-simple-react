@@ -10,30 +10,52 @@ import { Progressbar } from "./Progressbar/Progressbar";
 import { CompletedPomodoros } from "./CompletedPomodoros/CompletedPomodoros";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { Toaster, toast } from "sonner";
-import { SettingButton } from "./Setting/SettingButton";
-import { Setting } from "./Setting/Setting";
-import { toggleSetting } from "../helpers/toggleSetting";
+import { toggleVisible } from "../helpers/toggleVisible";
 import { getTimeByMod } from "../helpers/getTimeByMode";
 import { playSound } from "../helpers/playSounds";
+import { handleSoundOn } from "../helpers/handleSoundOn";
+import { setDayStatistic } from "../helpers/setDayStatistic";
+import { Nav } from "./Nav/Nav";
+import { NavModals } from "./Nav/NavModals";
 
 export const Timer = () => {
-  const [localValue, setLocalValue] = useLocalStorage("completedPomodors", "");
-  const [localTime, setLocalTime] = useLocalStorage("timers", "");
+  const defultTime = {
+    pomodoro: 25 * 60,
+    shortBreak: 5 * 60,
+    longBreak: 15 * 60,
+  };
+  const initialDayStat = {
+    date: `${new Date().getDate().toString().padStart(2, "0")}-${new Date()
+      .getMonth()
+      .toString()
+      .padStart(2, "0")}-${new Date().getFullYear()}`,
+    weekDay: new Date().getDay(),
+    pomodoros: 0,
+  };
 
-  const [time, setTime] = useState(
-    localTime
-      ? { ...localTime }
-      : {
-          pomodoro: 25 * 60,
-          shortBreak: 5 * 60,
-          longBreak: 15 * 60,
-        }
+  const [localTime, setLocalTime] = useLocalStorage("timers", defultTime);
+  const [localSoundOn, setLocalSoundOn] = useLocalStorage("soundOn", false);
+  const [localWeekStats, setLocalWeekStats] = useLocalStorage(
+    "localWeekStats",
+    []
   );
-  const [timeLeft, setTimeLeft] = useState(time.pomodoro);
-  const [totalTime, setTotalTime] = useState(time.pomodoro);
+
+  const [time, setTime] = useState(localTime ? { ...localTime } : defultTime);
+
   const [mode, setMode] = useState("pomodoro");
-  const [completedPomodoros, setCompletedPomodoros] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(getTimeByMod(time, mode));
+  const [totalTime, setTotalTime] = useState(getTimeByMod(time, mode));
   const [visibleSetting, setVisibleSettings] = useState(false);
+  const [visibleStats, setVisibleStats] = useState(false);
+  const [soundSwitcherValue, setSoundSwitcherValue] = useState(
+    localSoundOn ? localSoundOn : false
+  );
+  const [dayStat, setDayStat] = useState(() => {
+    const savedWeek = Array.isArray(localWeekStats) ? localWeekStats : [];
+    const sameDay = savedWeek.find((d) => d.date === initialDayStat.date);
+    return sameDay ?? initialDayStat;
+  });
+  const [weekStat, setWeekStat] = useState(localWeekStats ?? []);
   const minutes = Math.floor(timeLeft / 60)
     .toString()
     .padStart(2, "0");
@@ -44,8 +66,8 @@ export const Timer = () => {
   const progressRef = useRef(null);
 
   const setSession = (mode) => {
-    setTimeLeft(getTimeByMod(time, mode));
-    setTotalTime(getTimeByMod(time, mode));
+    setTimeLeft(getTimeByMod(time, mode) ?? 25 * 60);
+    setTotalTime(getTimeByMod(time, mode) ?? 25 * 60);
   };
 
   const switchSession = (seconds, newMode) => {
@@ -60,14 +82,10 @@ export const Timer = () => {
   };
 
   const choiceMode = (e) => {
-    playSound("/audio/cleanWhoosh.mp3");
+    soundSwitcherValue && playSound("public/audio/cleanWhoosh.mp3");
     const newMod = e.target.id;
     setMode(newMod);
     setSession(newMod);
-  };
-
-  const handleCleanLocalStorage = () => {
-    setLocalValue([]);
   };
 
   const handleChangeTime = (e) => {
@@ -82,40 +100,51 @@ export const Timer = () => {
   const handleSubmitForm = (e) => {
     e.preventDefault();
     setLocalTime({ ...time });
-    setTimeLeft(time.pomodoro);
-    setTotalTime(time.pomodoro);
-    toggleSetting(setVisibleSettings);
+    setLocalSoundOn(soundSwitcherValue);
+    setTimeLeft(getTimeByMod(time, mode));
+    setTotalTime(getTimeByMod(time, mode));
+    toggleVisible(setVisibleSettings);
   };
 
   useEffect(() => {
     if (timeLeft === 0) {
-      playSound("/audio/notificationBell.mp3");
       stopTimer();
       switch (mode) {
         case "pomodoro":
-          return setCompletedPomodoros((prev) => {
-            let nextCount = prev + 1;
-            setLocalValue(nextCount);
+          setDayStatistic(setDayStat, setWeekStat);
 
-            if (nextCount > 0 && nextCount < 4) {
-              switchSession(time.shortBreak, "short-break");
-              handleStartTimer(timerRef, setTimeLeft, timeLeft, lastTimeRef);
-            } else {
-              switchSession(time.longBreak, "long-break");
-              handleStartTimer(timerRef, setTimeLeft, timeLeft, lastTimeRef);
-            }
-            return nextCount;
-          });
+          if (dayStat.pomodoros > 0 && dayStat.pomodoros < 4) {
+            switchSession(time.shortBreak, "short-break");
+            soundSwitcherValue &&
+              playSound("public/audio/notificationBell.mp3");
+            return handleStartTimer(
+              timerRef,
+              setTimeLeft,
+              timeLeft,
+              lastTimeRef
+            );
+          } else {
+            switchSession(time.longBreak, "long-break");
+            soundSwitcherValue &&
+              playSound("public/audio/notificationBell.mp3");
+            return handleStartTimer(
+              timerRef,
+              setTimeLeft,
+              timeLeft,
+              lastTimeRef
+            );
+          }
 
         case "short-break" || "long-break":
           switchSession(time.pomodoro, "pomodoro");
+          soundSwitcherValue && playSound("public/audio/singleBell.mp3");
           return handleStartTimer(timerRef, setTimeLeft, timeLeft, lastTimeRef);
       }
     }
   }, [timeLeft]);
 
   useEffect(() => {
-    switch (localValue) {
+    switch (dayStat.pomodoros) {
       case 1:
         toast.success("Nice job! First step is completed 💪🏼");
         break;
@@ -134,7 +163,7 @@ export const Timer = () => {
 
         break;
     }
-  }, [completedPomodoros]);
+  }, [dayStat]);
 
   useEffect(() => {
     return () => {
@@ -142,58 +171,92 @@ export const Timer = () => {
     };
   }, []);
 
+  useEffect(() => {
+    setLocalWeekStats(weekStat);
+  }, [weekStat]);
+
   return (
     <>
-      <Setting
+      <NavModals
         visibleSetting={visibleSetting}
-        toggleSetting={() => toggleSetting(setVisibleSettings)}
+        toggleVisibleSetting={() => toggleVisible(setVisibleSettings)}
+        toggleVisibleStats={() => toggleVisible(setVisibleStats)}
         handleChangeTime={handleChangeTime}
         handleSubmitForm={handleSubmitForm}
+        handleSoundOn={() => handleSoundOn(setSoundSwitcherValue)}
+        soundSwitcherValue={soundSwitcherValue}
         localTime={localTime}
         time={time}
+        dayStat={dayStat}
+        visibleStats={visibleStats}
       />
-      <div className="mx-auto w-[70%]  border-0 p-5 mt-10 flex flex-col items-center rounded-xl  shadow-md shadow-black bg-red-400/50">
-        <Toaster
-          position="top-right"
-          expand={false}
-          closeButton
-          toastOptions={{
-            style: {
-              background: "#70c270",
-              border: "none",
-              color: "white",
-            },
-          }}
-        />
-        <SettingButton
-          toggleSetting={() => toggleSetting(setVisibleSettings)}
-        />
+      <main
+        className={`h-[100vh] w-[100vw] overflow-y-scroll duration-300 ease-in-out ${
+          (mode === "pomodoro" && "bg-red-900/80") ||
+          (mode === "short-break" && "bg-blue-900/80") ||
+          (mode === "long-break" && "bg-green-900/80")
+        }  pt-10`}
+      >
+        <div
+          className={`mx-auto w-[70%] mb-15  border-0 p-5 duration-300 ease-in-out  flex flex-col items-center rounded-xl  shadow-md shadow-black ${
+            (mode === "pomodoro" && "bg-red-500/30") ||
+            (mode === "short-break" && "bg-blue-500/30") ||
+            (mode === "long-break" && "bg-green-500/30")
+          }`}
+        >
+          <Toaster
+            position="top-right"
+            expand={false}
+            closeButton
+            toastOptions={{
+              style: {
+                background: "#70c270",
+                border: "none",
+                color: "white",
+              },
+            }}
+          />
+          <Nav
+            toggleVisible={toggleVisible}
+            setVisibleSettings={setVisibleSettings}
+            setVisibleStats={setVisibleStats}
+          />
+          <Progressbar
+            progressRef={progressRef}
+            timeLeft={timeLeft}
+            totalTime={totalTime}
+          />
+          <Sessions choiceMode={choiceMode} mode={mode} />
+          <p className="text-9xl font-semibold text-white mb-10 inline-block ">
+            {minutes}:{seconds}
+          </p>
 
-        <Progressbar
-          progressRef={progressRef}
-          timeLeft={timeLeft}
-          totalTime={totalTime}
-        />
-        <Sessions choiceMode={choiceMode} mode={mode} />
-        <p className="text-9xl text-white mb-10 inline-block ">
-          {minutes}:{seconds}
-        </p>
+          <Controls
+            handleStartTimer={() =>
+              handleStartTimer(
+                timerRef,
+                setTimeLeft,
+                timeLeft,
+                lastTimeRef,
+                soundSwitcherValue
+              )
+            }
+            handlePauseTimer={() =>
+              handlePauseTimer(stopTimer, soundSwitcherValue)
+            }
+            handleRestartTimer={() =>
+              handleRestartTimer(
+                setSession,
+                stopTimer,
+                mode,
+                soundSwitcherValue
+              )
+            }
+          />
 
-        <Controls
-          handleStartTimer={() =>
-            handleStartTimer(timerRef, setTimeLeft, timeLeft, lastTimeRef)
-          }
-          handlePauseTimer={() => handlePauseTimer(stopTimer)}
-          handleRestartTimer={() =>
-            handleRestartTimer(setSession, stopTimer, mode)
-          }
-        />
-
-        <CompletedPomodoros
-          completedPomodoros={localValue}
-          handleCleanLocalStorage={handleCleanLocalStorage}
-        />
-      </div>
+          <CompletedPomodoros completedPomodoros={dayStat.pomodoros} />
+        </div>
+      </main>
     </>
   );
 };

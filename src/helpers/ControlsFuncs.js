@@ -5,7 +5,8 @@ export const handleStartTimer = (
   timerRef,
   setTimeLeft,
   timeLeft,
-  lastTimeRef
+  lastTimeRef,
+  soundSwitcherValue
 ) => {
   if (timerRef.current) return;
   lastTimeRef.current = timeLeft;
@@ -18,16 +19,21 @@ export const handleStartTimer = (
       }
     });
   }, 1000);
-  playSound("/audio/buttonPress.mp3");
+  soundSwitcherValue && playSound("public/audio/buttonPress.mp3");
 };
 
-export const handlePauseTimer = (stopTimer) => {
+export const handlePauseTimer = (stopTimer, soundSwitcherValue) => {
   stopTimer();
-  playSound("/audio/buttonPress.mp3");
+  soundSwitcherValue && playSound("public/audio/buttonPress.mp3");
 };
 
-export const handleRestartTimer = (setSession, stopTimer, mode) => {
+export const handleRestartTimer = (
+  setSession,
+  stopTimer,
+  mode,
+  soundSwitcherValue
+) => {
   setSession(mode);
   stopTimer();
-  playSound("/audio/buttonPress.mp3");
+  soundSwitcherValue && playSound("public/audio/buttonPress.mp3");
 };

@@ -8,7 +8,7 @@ export const Progressbar = ({ progressRef, timeLeft, totalTime }) => {
       </span>
       <div
         ref={progressRef}
-        className="h-[100%] bg-white transition-width duration-300 easy-in-out border-0 rounded-2xl  "
+        className="h-[100%] bg-white transition-width duration-300 ease-in-out border-0 rounded-2xl  "
         style={{ width: `${percent}%` }}
       ></div>
     </div>

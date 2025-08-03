@@ -1,4 +1,4 @@
-import { Howl, Howler } from "howler";
+import { Howl } from "howler";
 export const playSound = (soundSrc) => {
   var sound = new Howl({
     src: [soundSrc],
