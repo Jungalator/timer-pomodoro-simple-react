@@ -82,7 +82,7 @@ export const Timer = () => {
   };
 
   const choiceMode = (e) => {
-    soundSwitcherValue && playSound("public/audio/cleanWhoosh.mp3");
+    soundSwitcherValue && playSound("audio/cleanWhoosh.mp3");
     const newMod = e.target.id;
     setMode(newMod);
     setSession(newMod);
@@ -113,10 +113,9 @@ export const Timer = () => {
         case "pomodoro":
           setDayStatistic(setDayStat, setWeekStat);
 
-          if (dayStat.pomodoros > 0 && dayStat.pomodoros < 4) {
+          if (dayStat.pomodoros < 4) {
             switchSession(time.shortBreak, "short-break");
-            soundSwitcherValue &&
-              playSound("public/audio/notificationBell.mp3");
+            soundSwitcherValue && playSound("audio/notificationBell.mp3");
             return handleStartTimer(
               timerRef,
               setTimeLeft,
@@ -125,8 +124,7 @@ export const Timer = () => {
             );
           } else {
             switchSession(time.longBreak, "long-break");
-            soundSwitcherValue &&
-              playSound("public/audio/notificationBell.mp3");
+            soundSwitcherValue && playSound("audio/notificationBell.mp3");
             return handleStartTimer(
               timerRef,
               setTimeLeft,
@@ -137,7 +135,7 @@ export const Timer = () => {
 
         case "short-break" || "long-break":
           switchSession(time.pomodoro, "pomodoro");
-          soundSwitcherValue && playSound("public/audio/singleBell.mp3");
+          soundSwitcherValue && playSound("audio/singleBell.mp3");
           return handleStartTimer(timerRef, setTimeLeft, timeLeft, lastTimeRef);
       }
     }
@@ -189,6 +187,7 @@ export const Timer = () => {
         time={time}
         dayStat={dayStat}
         visibleStats={visibleStats}
+        localWeekStats={localWeekStats}
       />
       <main
         className={`h-[100vh] w-[100vw] overflow-y-scroll duration-300 ease-in-out ${

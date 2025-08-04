@@ -1,13 +1,20 @@
 import { Modal } from "../../Modal/Modal";
 import { TodayStats } from "./TodayStats.jsx/TodayStats";
-export const Statistic = ({ visibleStats, toggleVisible, dayStat }) => {
+import { WeekStatistic } from "./WeekStatistic/WeekStatistic";
+export const Statistic = ({
+  visibleStats,
+  toggleVisible,
+  dayStat,
+  localWeekStats,
+}) => {
   return (
     <Modal
       isVisible={visibleStats}
       toggleVisible={toggleVisible}
-      childrenTitle="STATISTIC"
+      childrenTitle="STATISTICS"
     >
       <TodayStats dayStat={dayStat} />
+      <WeekStatistic localWeekStats={localWeekStats} />
     </Modal>
   );
 };

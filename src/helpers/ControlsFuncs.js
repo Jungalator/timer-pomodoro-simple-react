@@ -19,12 +19,12 @@ export const handleStartTimer = (
       }
     });
   }, 1000);
-  soundSwitcherValue && playSound("public/audio/buttonPress.mp3");
+  soundSwitcherValue && playSound("audio/buttonPress.mp3");
 };
 
 export const handlePauseTimer = (stopTimer, soundSwitcherValue) => {
   stopTimer();
-  soundSwitcherValue && playSound("public/audio/buttonPress.mp3");
+  soundSwitcherValue && playSound("audio/buttonPress.mp3");
 };
 
 export const handleRestartTimer = (
@@ -35,5 +35,5 @@ export const handleRestartTimer = (
 ) => {
   setSession(mode);
   stopTimer();
-  soundSwitcherValue && playSound("public/audio/buttonPress.mp3");
+  soundSwitcherValue && playSound("audio/buttonPress.mp3");
 };

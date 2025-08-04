@@ -17,6 +17,7 @@ export const NavModals = (props) => {
         dayStat={props.dayStat}
         toggleVisible={props.toggleVisibleStats}
         visibleStats={props.visibleStats}
+        localWeekStats={props.localWeekStats}
       />
     </>
   );

@@ -2,7 +2,7 @@ export const TodayStats = ({ dayStat }) => {
   return (
     <article>
       <h4 className="mt-3 mb-3 text-neutral-600 font-semibold">
-        Statistic Today
+        Today's statistics
       </h4>
       <div className="flex items-center mb-5">
         <p className="text-neutral-500 font-semibold">
